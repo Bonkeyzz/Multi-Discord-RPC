@@ -1,0 +1,13 @@
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\bin\Release\Multi-DiscordRPC.exe.config
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\bin\Release\Multi-DiscordRPC.exe
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\bin\Release\Multi-DiscordRPC.pdb
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\bin\Release\DiscordRPC.dll
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\bin\Release\Newtonsoft.Json.dll
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\bin\Release\DiscordRPC.pdb
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\bin\Release\DiscordRPC.xml
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\bin\Release\Newtonsoft.Json.xml
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\obj\Release\Multi-DiscordRPC.csproj.CoreCompileInputs.cache
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\obj\Release\Multi-DiscordRPC.csproj.CopyComplete
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\obj\Release\Multi-DiscordRPC.exe
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\obj\Release\Multi-DiscordRPC.pdb
+C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\obj\Release\Multi-DiscordRPC.csprojAssemblyReference.cache
