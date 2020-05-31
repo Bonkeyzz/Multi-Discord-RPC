@@ -23,3 +23,5 @@
 ``` "proc_name" ``` -- Process Name (Without file extension)<br/>
 ``` "app_name" ``` -- Application name (This does not affect the RPC App, its just for identification.)<br/>
 ``` "app_id" ``` -- Application ID (You can create an Application [here](https://discord.com/developers/applications).)<br/>
+
+Applications are saved in the **apps** directory. 
