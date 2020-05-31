@@ -1,0 +1,5 @@
+{
+    "rpcThreadUpdateInterval": 2000,
+    "kbThreadDetectInterval": 150,
+    "startHidden": false
+}

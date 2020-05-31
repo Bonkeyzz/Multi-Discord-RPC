@@ -14,68 +14,8 @@ namespace Multi_DiscordRPC
     public static class AppInfo
     {
         public static string appName = "Multi Discord RPC";
-        public static string appVersion = "1.0";
+        public static string appVersion = "1.1";
         public static string appAuthor = "Bonk";
-    }
-    public class dRPCApplication
-    {
-        [JsonProperty("state")]
-        /// <summary>
-        /// Bottom Text
-        /// </summary>
-        public string sState;
-        [JsonProperty("details")]
-        /// <summary>
-        /// Top Text
-        /// </summary>
-        public string sDetails;
-
-        [JsonProperty("large_img_key")]
-        public string sLargeImgKey;
-
-        [JsonProperty("small_img_key")]
-        public string sSmallImgKey;
-
-        [JsonProperty("large_img_text")]
-        public string sLargeImgText;
-
-        [JsonProperty("small_img_text")]
-        public string sSmallImgText;
-
-        [JsonProperty("proc_name")]
-        public string sProcessName; /* No Extension */
-
-        [JsonProperty("app_id")]
-        public string sAppId;
-
-        [JsonProperty("app_name")]
-        public string sAppName;
-        /// <summary>
-        /// Class for storing defined discord Apps/RPC Data (JSON Friendly)
-        /// </summary>
-        /// <param name="mState">Bottom Text of RPresence</param>
-        /// <param name="mDetails">Top Text of RPresence</param>
-        /// <param name="mLargeImgKey">Primary image name</param>
-        /// <param name="mSmallImgKey">Secondary image name</param>
-        /// <param name="mLargeImgText">Text when hovering on primary image</param>
-        /// <param name="mSmallImgText">Text when hovering on secondary image</param>
-        /// <param name="mProcessName">Process name to look for (No Extension)</param>
-        /// <param name="mAppId">Application ID</param>
-        public dRPCApplication(string mDetails = null, string mState = null, string mLargeImgKey = null,
-            string mSmallImgKey = null, string mLargeImgText = null, string mSmallImgText = null, string mProcessName = null, string mAppId = null, string mAppName = null)
-        {
-            sState = mState;
-            sDetails = mDetails;
-            sLargeImgKey = mLargeImgKey;
-            sSmallImgKey = mSmallImgKey;
-            sLargeImgText = mLargeImgText;
-            sSmallImgText = mSmallImgText;
-
-            sProcessName = mProcessName;
-            sAppId = mAppId;
-
-            sAppName = mAppName;
-        }
     }
     class Program
     {
@@ -95,6 +35,8 @@ namespace Multi_DiscordRPC
         static LogLevel lLogLevel = LogLevel.Warning;
         static Thread thr_ProcessDetection;
         static bool bConsoleHidden = false;
+
+        public static cConfig cfg;
 
         static void setCurrentRPCApp(dRPCApplication app, bool reInit = true)
         {
@@ -174,7 +116,7 @@ namespace Multi_DiscordRPC
                         pPrint($"[I] Application '{app.sAppName}' (Process: '{app.sProcessName}.exe') appears to be closed. Clearing Presence...", ConsoleColor.DarkYellow);
                     }
                 }
-                Thread.Sleep(2000);
+                Thread.Sleep(cfg.rpcThreadUpdateInt);
             }
         }
 
@@ -218,7 +160,7 @@ namespace Multi_DiscordRPC
                         setConsoleState(nApiWindowState.SW_SHOW);
                     }
                 }
-                Thread.Sleep(150);
+                Thread.Sleep(cfg.kbThreadUpdateInt);
             }
         }
         class ConsoleLoggerFormatted : ILogger
@@ -312,6 +254,20 @@ namespace Multi_DiscordRPC
 
         async Task MainAsync()
         {
+            try
+            {
+                cfg = JsonConvert.DeserializeObject<cConfig>(File.ReadAllText(Environment.CurrentDirectory + "\\config.json"));
+            }
+            catch (Exception e)
+            {
+                pPrint("[E] Failed to read config! Using defaults.", ConsoleColor.Red);
+                cfg = new cConfig(2000, 150, false);
+            }
+            pPrint($"===APP CONFIG===\nrpcClientUpdateInterval: {cfg.rpcThreadUpdateInt}\nkbDetectInterval: {cfg.kbThreadUpdateInt}\nstartHidden: {cfg.isHidden}\n================", ConsoleColor.Cyan);
+            if (cfg.isHidden)
+            {
+                setConsoleState(nApiWindowState.SW_HIDE);
+            }
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(cDomain_onProcessExit);
             await setRPCApps();
             await InitializeRpcClient();
