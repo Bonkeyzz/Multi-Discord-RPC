@@ -3,7 +3,7 @@
  
  
 ## Writing an App
- Apps in this programs are made with JSON, an example app for google chrome is:<br/><br/>
+ Apps in this program are made with JSON, an example app for google chrome is:<br/><br/>
 
 ```
 {
