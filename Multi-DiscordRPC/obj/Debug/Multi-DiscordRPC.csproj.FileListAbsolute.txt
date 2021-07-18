@@ -10,3 +10,15 @@ C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\obj\Debug\Multi-Di
 C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\obj\Debug\Multi-DiscordRPC.csproj.CopyComplete
 C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\obj\Debug\Multi-DiscordRPC.exe
 C:\Users\bonke\source\repos\Multi-DiscordRPC\Multi-DiscordRPC\obj\Debug\Multi-DiscordRPC.pdb
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\bin\Debug\Multi-DiscordRPC.exe.config
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\bin\Debug\Multi-DiscordRPC.exe
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\bin\Debug\Multi-DiscordRPC.pdb
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\bin\Debug\DiscordRPC.dll
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\bin\Debug\Newtonsoft.Json.dll
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\bin\Debug\DiscordRPC.pdb
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\bin\Debug\DiscordRPC.xml
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\bin\Debug\Newtonsoft.Json.xml
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\obj\Debug\Multi-DiscordRPC.csproj.CoreCompileInputs.cache
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\obj\Debug\Multi-DiscordRPC.csproj.CopyComplete
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\obj\Debug\Multi-DiscordRPC.exe
+C:\Users\bonke\Source\Repos\Bonkeyzz\Multi-Discord-RPC\Multi-DiscordRPC\obj\Debug\Multi-DiscordRPC.pdb

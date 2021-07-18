@@ -4,55 +4,53 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Multi_DiscordRPC
 {
     public static class AppInfo
     {
         public static string appName = "Multi Discord RPC";
-        public static string appVersion = "1.1";
+        public static string appVersion = "2.0";
         public static string appAuthor = "Bonk";
     }
     class Program
     {
-        static void pPrint(string text, ConsoleColor fg, ConsoleColor bg = ConsoleColor.Black)
+
+        #region Variables
+        static List<RPCApplication> m_RPCApplicationList = new List<RPCApplication>();
+        static RPCApplication m_RPCApplication;
+        static DiscordRpcClient m_RPCClient;
+        static bool FirstInit = true;
+        static LogLevel m_LogLevel = LogLevel.Warning;
+        static Thread ProcessDetectThread;
+        static bool HideConsole;
+        private static NotifyIcon m_trayIcon;
+        #endregion
+
+        public static AppConfig m_Config;
+
+        static void setCurrentRPCApp(RPCApplication app, bool reInit = true)
         {
-            if (bConsoleHidden) return;
-            Console.BackgroundColor = bg;
-            Console.ForegroundColor = fg;
-            Console.WriteLine(text);
-            Console.ResetColor();
-        }
-
-        static List<dRPCApplication> dRPCAppList = new List<dRPCApplication>();
-        static dRPCApplication dRPCActiveApp;
-        static DiscordRpcClient dRpcClient;
-        static bool bFirstInit = true;
-        static LogLevel lLogLevel = LogLevel.Warning;
-        static Thread thr_ProcessDetection;
-        static bool bConsoleHidden = false;
-
-        public static cConfig cfg;
-
-        static void setCurrentRPCApp(dRPCApplication app, bool reInit = true)
-        {
-            pPrint($"[I] Setting RPresence to: '{app.sAppName}'...", ConsoleColor.DarkYellow);
-            if (dRpcClient != null && dRpcClient.IsInitialized)
+            Utils.PrettyPrint($"[I] Setting RPresence to: '{app.sAppName}'...", ConsoleColor.DarkYellow, HideConsole:HideConsole);
+            if (m_RPCClient != null && m_RPCClient.IsInitialized)
             {
                 if (reInit)
                 {
-                    pPrint("[I] Closing current RPC instance...", ConsoleColor.Yellow);
-                    dRpcClient.ClearPresence();
-                    dRpcClient.Deinitialize();
+                    Utils.PrettyPrint("[I] Closing current RPC instance...", ConsoleColor.Yellow, HideConsole: HideConsole);
+                    m_RPCClient.ClearPresence();
+                    m_RPCClient.Deinitialize();
 
-                    pPrint("[I] Creating a new RPC instance...", ConsoleColor.Yellow);
-                    dRpcClient = new DiscordRpcClient(app.sAppId);
-                    dRpcClient.Logger = new ConsoleLoggerFormatted() { Level = lLogLevel };
-                    dRpcClient.Initialize();
+                    Utils.PrettyPrint("[I] Creating a new RPC instance...", ConsoleColor.Yellow, HideConsole: HideConsole);
+                    m_RPCClient = new DiscordRpcClient(app.sAppId);
+                    m_RPCClient.Logger = new ConsoleLoggerFormatted() { Level = m_LogLevel };
+                    m_RPCClient.Initialize();
 
                 }
                 RichPresence rp = new RichPresence();
@@ -65,62 +63,62 @@ namespace Multi_DiscordRPC
 
                 rp.Details = app.sDetails;
                 rp.State = app.sState;
-                pPrint("[I] Updating Rich Presence...", ConsoleColor.Yellow);
-                dRpcClient.SetPresence(rp);
-                dRPCActiveApp = app;
+                Utils.PrettyPrint("[I] Updating Rich Presence...", ConsoleColor.Yellow, HideConsole: HideConsole);
+                m_RPCClient.SetPresence(rp);
+                m_RPCApplication = app;
             }
         }
         static bool isProcessRunning( /* No Extension */ string procName)
         {
-            bool isRunning = false;
+            bool running = false;
             foreach (var proc in Process.GetProcesses())
             {
                 if (proc.ProcessName == procName)
                 {
-                    isRunning = true;
+                    running = true;
                     break;
                 }
             }
-            return isRunning;
+            return running;
         }
-
         static void rpcProcessHandler()
         {
             for (; ; )
             {
-                foreach (var app in dRPCAppList)
+                foreach (var app in m_RPCApplicationList)
                 {
                     if (isProcessRunning(app.sProcessName))
                     {
-                        if (dRPCActiveApp != app)
+                        if (m_RPCApplication != app)
                         {
-                            pPrint($"[I] Found new Application '{app.sAppName}' (Process: '{app.sProcessName}.exe')", ConsoleColor.DarkYellow);
+                            Utils.PrettyPrint($"[I] Found new Application '{app.sAppName}' (Process: '{app.sProcessName}.exe')", ConsoleColor.DarkYellow, HideConsole: HideConsole);
                         }
-                        if (dRpcClient == null && dRPCActiveApp == null && bFirstInit)
+                        if (m_RPCClient == null && m_RPCApplication == null && FirstInit)
                         {
-                            dRpcClient = new DiscordRpcClient(app.sAppId);
-                            dRpcClient.Initialize();
-                            dRpcClient.Logger = new ConsoleLoggerFormatted() { Level = lLogLevel };
+                            m_RPCClient = new DiscordRpcClient(app.sAppId);
+                            m_RPCClient.Initialize();
+                            m_RPCClient.Logger = new ConsoleLoggerFormatted() { Level = m_LogLevel };
                             setCurrentRPCApp(app, false);
-                            bFirstInit = false;
+                            FirstInit = false;
                         }
-                        else if (dRPCActiveApp != app && dRPCActiveApp == null)
+                        else if (m_RPCApplication != app && m_RPCApplication == null)
                         {
                             setCurrentRPCApp(app);
                         }
                     }
-                    if (dRPCActiveApp == app && !isProcessRunning(app.sProcessName))
+                    if (m_RPCApplication == app && !isProcessRunning(app.sProcessName))
                     {
-                        dRpcClient.ClearPresence();
-                        dRPCActiveApp = null;
-                        pPrint($"[I] Application '{app.sAppName}' (Process: '{app.sProcessName}.exe') appears to be closed. Clearing Presence...", ConsoleColor.DarkYellow);
+                        m_RPCClient.ClearPresence();
+                        m_RPCApplication = null;
+                        Utils.PrettyPrint($"[I] Application '{app.sAppName}' (Process: '{app.sProcessName}.exe') appears to be closed. Clearing Presence...",
+                            ConsoleColor.DarkYellow, HideConsole: HideConsole);
                     }
                 }
-                Thread.Sleep(cfg.rpcThreadUpdateInt);
+                Thread.Sleep(m_Config.rpcThreadUpdateInt);
             }
         }
 
-        static class NativeApi
+        static class WinApiImports
         {
             [DllImport("user32")]
             public static extern short GetAsyncKeyState(int vKey);
@@ -132,16 +130,16 @@ namespace Multi_DiscordRPC
             public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
         }
 
-        enum nApiWindowState
+        enum WindowState
         {
             SW_SHOW = 5,
             SW_HIDE = 0
         }
-        static void setConsoleState(nApiWindowState state)
+        static void SetConsoleState(WindowState state)
         {
-            var consoleHandle = NativeApi.GetConsoleWindow();
-            NativeApi.ShowWindow(consoleHandle, (int)state);
-            bConsoleHidden = (state == nApiWindowState.SW_HIDE) ? true : false;
+            var consoleHandle = WinApiImports.GetConsoleWindow();
+            WinApiImports.ShowWindow(consoleHandle, (int)state);
+            HideConsole = (state == WindowState.SW_HIDE);
         }
 
         static void keyStateHandler()
@@ -149,18 +147,18 @@ namespace Multi_DiscordRPC
             while (true)
             {
                 // Detect CTRL + SHIFT + H
-                if (((NativeApi.GetAsyncKeyState(0x48) & 0x8000) > 0) && ((NativeApi.GetAsyncKeyState(0x10) & 0x8000) > 0) && ((NativeApi.GetAsyncKeyState(0x11) & 0x8000) > 0))
+                if (((WinApiImports.GetAsyncKeyState(0x48) & 0x8000) > 0) && ((WinApiImports.GetAsyncKeyState(0x10) & 0x8000) > 0) && ((WinApiImports.GetAsyncKeyState(0x11) & 0x8000) > 0))
                 {
-                    if (!bConsoleHidden)
+                    if (!HideConsole)
                     {
-                        setConsoleState(nApiWindowState.SW_HIDE);
+                        SetConsoleState(WindowState.SW_HIDE);
                     }
                     else
                     {
-                        setConsoleState(nApiWindowState.SW_SHOW);
+                        SetConsoleState(WindowState.SW_SHOW);
                     }
                 }
-                Thread.Sleep(cfg.kbThreadUpdateInt);
+                Thread.Sleep(m_Config.kbThreadUpdateInt);
             }
         }
         class ConsoleLoggerFormatted : ILogger
@@ -169,37 +167,37 @@ namespace Multi_DiscordRPC
 
             public void Error(string message, params object[] args)
             {
-                if (bConsoleHidden) return;
+                if (HideConsole) return;
                 if (Level == LogLevel.Error || Level == LogLevel.Trace || Level == LogLevel.Warning)
                 {
-                    pPrint(string.Format($"[X] DiscordRPC: '{message}'", args), ConsoleColor.Red);
+                    Utils.PrettyPrint(string.Format($"[X] DiscordRPC: '{message}'", args), ConsoleColor.Red, HideConsole: HideConsole);
                 }
             }
 
             public void Info(string message, params object[] args)
             {
-                if (bConsoleHidden) return;
+                if (HideConsole) return;
                 if (Level == LogLevel.Info)
                 {
-                    pPrint(string.Format($"[I] DiscordRPC: '{message}'", args), ConsoleColor.White);
+                    Utils.PrettyPrint(string.Format($"[I] DiscordRPC: '{message}'", args), ConsoleColor.White, HideConsole: HideConsole);
                 }
             }
 
             public void Trace(string message, params object[] args)
             {
-                if (bConsoleHidden) return;
+                if (HideConsole) return;
                 if (Level == LogLevel.Trace)
                 {
-                    pPrint(string.Format($"[D] DiscordRPC: '{message}'", args), ConsoleColor.Cyan);
+                    Utils.PrettyPrint(string.Format($"[D] DiscordRPC: '{message}'", args), ConsoleColor.Cyan, HideConsole: HideConsole);
                 }
             }
 
             public void Warning(string message, params object[] args)
             {
-                if (bConsoleHidden) return;
+                if (HideConsole) return;
                 if (Level == LogLevel.Warning || Level == LogLevel.Error)
                 {
-                    pPrint(string.Format($"[W] DiscordRPC: '{message}'", args), ConsoleColor.Yellow);
+                    Utils.PrettyPrint(string.Format($"[W] DiscordRPC: '{message}'", args), ConsoleColor.Yellow, HideConsole: HideConsole);
                 }
             }
         }
@@ -207,41 +205,41 @@ namespace Multi_DiscordRPC
         static Task InitializeRpcClient()
         {
             Console.Title = $"{AppInfo.appName} Version: {AppInfo.appVersion} : By {AppInfo.appAuthor}";
-            pPrint($"[I] Initializing thread...", ConsoleColor.White);
-            thr_ProcessDetection = new Thread(rpcProcessHandler);
-            thr_ProcessDetection.Start();
-            pPrint($"[I] RPC thread is running! Looking for running applications...", ConsoleColor.Green);
+            Utils.PrettyPrint($"[I] Initializing thread...", ConsoleColor.White, HideConsole: HideConsole);
+            ProcessDetectThread = new Thread(rpcProcessHandler);
+            ProcessDetectThread.Start();
+            Utils.PrettyPrint($"[I] RPC thread is running! Looking for running applications...", ConsoleColor.Green, HideConsole: HideConsole);
             return Task.CompletedTask;
         }
 
-        static Task setRPCApps()
+        static Task SetRPCApps()
         {
             if (Directory.Exists(Environment.CurrentDirectory + "\\apps"))
             {
                 if (Directory.GetFiles(Environment.CurrentDirectory + "\\apps").Length > 0)
                 {
-                    foreach (var jsonfile in Directory.GetFiles(Environment.CurrentDirectory + "\\apps"))
+                    foreach (var app in Directory.GetFiles(Environment.CurrentDirectory + "\\apps"))
                     {
-                        if (jsonfile.EndsWith(".json"))
+                        if (app.EndsWith(".json"))
                         {
-                            dRPCApplication dRPCAppDeserialized = JsonConvert.DeserializeObject<dRPCApplication>(File.ReadAllText(jsonfile));
-                            dRPCAppList.Add(dRPCAppDeserialized);
-                            pPrint($"[I] File {Path.GetFileName(jsonfile)} found!", ConsoleColor.Green);
+                            RPCApplication rpcApp = JsonConvert.DeserializeObject<RPCApplication>(File.ReadAllText(app));
+                            m_RPCApplicationList.Add(rpcApp);
+                            Utils.PrettyPrint($"[I] File {Path.GetFileName(app)} found!", ConsoleColor.Green, HideConsole: HideConsole);
                         }
                     }
                 }
                 else
                 {
-                    pPrint("[E] There are no applications found in the 'apps' directory!", ConsoleColor.Red);
-                    pPrint("Press [ENTER] To exit.", ConsoleColor.Gray);
+                    Utils.PrettyPrint("[E] There are no applications found in the 'apps' directory!", ConsoleColor.Red, HideConsole: HideConsole);
+                    Utils.PrettyPrint("Press [ENTER] To exit.", ConsoleColor.Gray, HideConsole: HideConsole);
                     Console.ReadLine();
                     Environment.Exit(1);
                 }
             }
             else
             {
-                pPrint("[E] Directory 'apps' does not appear to exist!", ConsoleColor.Red);
-                pPrint("Press [ENTER] To exit.", ConsoleColor.Gray);
+                Utils.PrettyPrint("[E] Directory 'apps' does not appear to exist!", ConsoleColor.Red, HideConsole: HideConsole);
+                Utils.PrettyPrint("Press [ENTER] To exit.", ConsoleColor.Gray, HideConsole: HideConsole);
                 Console.ReadLine();
                 Environment.Exit(1);
 
@@ -250,41 +248,63 @@ namespace Multi_DiscordRPC
             return Task.CompletedTask;
         }
 
-        static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
+        [STAThread]
+        static void Main(string[] args) => new Program().MainAsync(args).GetAwaiter().GetResult();
 
-        async Task MainAsync()
+        async Task MainAsync(string[] args)
         {
+            m_trayIcon = new NotifyIcon();
+            m_trayIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
+            m_trayIcon.Text = "Multi Discord RPC";
+            m_trayIcon.DoubleClick += OnTrayIconMouseClick;
+            m_trayIcon.Visible = true;
+
+            ArgsParser argParse = new ArgsParser();
+            argParse.AddArgument("minimized", "m", "Starts the program minimized");
+            argParse.ParseArgs(args);
+
             try
             {
-                cfg = JsonConvert.DeserializeObject<cConfig>(File.ReadAllText(Environment.CurrentDirectory + "\\config.json"));
+                m_Config = JsonConvert.DeserializeObject<AppConfig>(File.ReadAllText(Environment.CurrentDirectory + "\\config.json"));
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                pPrint("[E] Failed to read config! Using defaults.", ConsoleColor.Red);
-                cfg = new cConfig(2000, 150, false);
+                Utils.PrettyPrint("[E] Failed to read config! Using defaults.", ConsoleColor.Red, HideConsole:HideConsole);
+                m_Config = new AppConfig(2000, 150, false);
             }
-            pPrint($"===APP CONFIG===\nrpcClientUpdateInterval: {cfg.rpcThreadUpdateInt}\nkbDetectInterval: {cfg.kbThreadUpdateInt}\nstartHidden: {cfg.isHidden}\n================", ConsoleColor.Cyan);
-            if (cfg.isHidden)
+            bool startMinimized = argParse.Exists("minimized");
+            if (m_Config.isHidden || startMinimized)
             {
-                setConsoleState(nApiWindowState.SW_HIDE);
+                SetConsoleState(WindowState.SW_HIDE);
+                m_trayIcon.ShowBalloonTip(4500, "Multi Discord RPC",
+                    "Program is now in the tray, double click to show it or hide it.", ToolTipIcon.Info);
             }
-            AppDomain.CurrentDomain.ProcessExit += new EventHandler(cDomain_onProcessExit);
-            await setRPCApps();
+            Utils.PrettyPrint($"===APP CONFIG===\nrpcClientUpdateInterval: {m_Config.rpcThreadUpdateInt}\nkbDetectInterval: {m_Config.kbThreadUpdateInt}\nstartHidden: {m_Config.isHidden}\n================", ConsoleColor.Cyan, HideConsole: HideConsole);
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+            await SetRPCApps();
             await InitializeRpcClient();
-            Thread thr_keystatedetect = new Thread(keyStateHandler);
-            thr_keystatedetect.Start();
-            pPrint("[I] You can press [CTRL + SHIFT + H] to hide or show this window.", ConsoleColor.Yellow);
+            Thread m_KeyboardKeyDetectionThread = new Thread(keyStateHandler);
+            m_KeyboardKeyDetectionThread.Start();
+            Utils.PrettyPrint("[I] You can press [CTRL + SHIFT + H] to hide or show this window.", ConsoleColor.Yellow, HideConsole: HideConsole);
         }
 
-        void cDomain_onProcessExit(object sender, EventArgs e)
+        private void OnTrayIconMouseClick(object sender, EventArgs e)
         {
-            if (dRpcClient != null)
+            if(HideConsole)
+                SetConsoleState(WindowState.SW_SHOW);
+            else
+                SetConsoleState(WindowState.SW_HIDE);
+        }
+
+        void OnProcessExit(object sender, EventArgs e)
+        {
+            if (m_RPCClient != null)
             {
-                if (dRpcClient.IsInitialized)
+                if (m_RPCClient.IsInitialized)
                 {
-                    dRpcClient.ClearPresence();
-                    dRpcClient.Deinitialize();
-                    dRpcClient.Dispose();
+                    m_RPCClient.ClearPresence();
+                    m_RPCClient.Deinitialize();
+                    m_RPCClient.Dispose();
                 }
             }
         }

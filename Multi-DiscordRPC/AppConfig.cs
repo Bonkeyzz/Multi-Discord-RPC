@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Multi_DiscordRPC
 {
-    public class cConfig
+    public class AppConfig
     {
         [JsonProperty("rpcThreadUpdateInterval")]
         public int rpcThreadUpdateInt { get; private set; }
@@ -18,7 +18,7 @@ namespace Multi_DiscordRPC
         [JsonProperty("startHidden")]
         public bool isHidden { get; private set; }
 
-        public cConfig(int rpcInt, int kbInt, bool hidden)
+        public AppConfig(int rpcInt, int kbInt, bool hidden)
         {
             rpcThreadUpdateInt = rpcInt;
             kbThreadUpdateInt = kbInt;

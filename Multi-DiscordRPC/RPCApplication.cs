@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Multi_DiscordRPC
 {
-    public class dRPCApplication
+    public class RPCApplication
     {
         [JsonProperty("state")]
         /// <summary>
@@ -51,7 +51,7 @@ namespace Multi_DiscordRPC
         /// <param name="mSmallImgText">Text when hovering on secondary image</param>
         /// <param name="mProcessName">Process name to look for (No Extension)</param>
         /// <param name="mAppId">Application ID</param>
-        public dRPCApplication(string mDetails = null, string mState = null, string mLargeImgKey = null,
+        public RPCApplication(string mDetails = null, string mState = null, string mLargeImgKey = null,
             string mSmallImgKey = null, string mLargeImgText = null, string mSmallImgText = null, string mProcessName = null, string mAppId = null, string mAppName = null)
         {
             sState = mState;
